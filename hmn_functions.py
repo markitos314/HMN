@@ -1,3 +1,10 @@
+import pandas as pd
+import numpy as np
+import os
+import glob
+import matplotlib.pyplot as plt
+
+
 def preprocess_emergencias(path):
   """
   Function that preprocesses 'emergencias' csv from Pentaho.
