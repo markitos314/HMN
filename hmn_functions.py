@@ -302,7 +302,7 @@ def top_20_cod_diagnostics(dataframe):
       plt.xticks(rotation=0);
  
 
-def medias_tiempo(dataframe):
+def promedios_tiempo(dataframe):
   print('Medias de tiempo según estado del paciente:')
   print(f"="*85)
   print(f"Media de tiempo entre Alta Médica e Ingreso: {dataframe['DIF_ALTA_MEDICA_INGRESO'].mean()}")
