@@ -124,7 +124,7 @@ def top_20_professionals(dataframe):
     #for i in ax.patches:
     #  ax.text(i.get_x(), i.get_height() + 15, str(i.get_height()), fontsize=13, color='dimgrey')
   
- def atenciones_por_hora(dataframe):
+def atenciones_por_hora(dataframe):
   df_horas = dataframe.FECHA_HORA_INGRESO.dt.hour.value_counts()
   df_horas = df_horas.sort_index()
 
