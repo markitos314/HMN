@@ -227,11 +227,10 @@ def atenciones_grupo_etareo(dataframe):
 
   for j, secc in enumerate(secciones):
     secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[j]])
-    secc_temp['EDAD'] = secc_temp['EDAD'].astype(int)
-    print(secc_temp['EDAD'])
+    secc_temp.reset_index(drop=True, inplace=True)
     grupos = [0,0,0,0,0,0]
     for k in range(len(secc_temp.EDAD)):
-      if secc_temp.EDAD[i] == 0:
+      if secc_temp.EDAD[k] == 0:
         grupos[0] = grupos[0] + 1
       elif secc_temp.EDAD[k] > 0 and secc_temp.EDAD[k] < 14:
         grupos[1] = grupos[1] + 1
@@ -250,11 +249,14 @@ def atenciones_grupo_etareo(dataframe):
     fig = plt.figure(figsize=(15,10))
     explode=[0.1,0.1,0.1,0,0.1,0.1]
     plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
-    plt.title(f"Atenciones en {secc} según grupo etáreo | GUARDIA");
-
+    plt.title(f"Atenciones en {secc} según grupo etáreo | EMERGENCIAS");
     
 def motivo_alta(dataframe):
-  dataframe['MOTIVO_ALTA'].value_counts(dropna=False)
+  df_display = pd.DataFrame(dataframe['MOTIVO_ALTA'].value_counts(dropna=False))
+  df_display = df_display.reset_index()
+  df_display.columns=['MOTIVO_ALTA', 'CANTIDAD']
+  display(df_display)
+  print('\n')
   ax = dataframe['MOTIVO_ALTA'].value_counts(dropna=False).plot(kind='barh', figsize=(15,10))
   ax.set_title("Motivo de alta")
 
@@ -263,18 +265,17 @@ def motivo_alta(dataframe):
       ax.text(i.get_width() - 600, i.get_y() + 0.20, str(i.get_width()), fontsize=13, color='white')
     else:
       ax.text(i.get_width() + 20, i.get_y() + .20, str(i.get_width()), fontsize=13, color='black')
- 
+
 
 def top_20_cod_diagnostics(dataframe):
-  sin_cod = dataframe['CIE10'].value_counts(dropna=False)[0]
-  total_atenciones = dataframe.CIE10.shape
+  sin_cod = dataframe['CIE10'].isna().sum()
+  total_atenciones = len(dataframe.CIE10)
 
   plt.figure()
-  ax = dataframe['CIE10'].value_counts(dropna=False)[1:21].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
-  ax.set_title("Top 20 diagnósticos codificados con CIE10")
+  ax = dataframe['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+  ax.set_title(f"Top 20 diagnósticos codificados con CIE10\nDiagnósticos sin codificar: {sin_cod} | Diagnósticos totales: {total_atenciones}", fontsize=20)
   plt.xticks(rotation=0)
-  print(f'Nota: el número de diagnósticos sin codificar es: {sin_cod}')
-  print(f'Nota: el número de diagnósticos total es: {total_atenciones}')
+  plt.show()
 
   for i in ax.patches:
     if i.get_height() < 100:
@@ -286,15 +287,19 @@ def top_20_cod_diagnostics(dataframe):
   secciones = dataframe['SECCION'].unique()
   for i, secc in enumerate(secciones):
     secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
-    sin_cod_temp = secc_temp['CIE10'].value_counts(dropna=False)[0]
-    total_atenciones_temp = secc_temp.CIE10.shape
+    sin_cod_temp = secc_temp['CIE10'].isna().sum()
+    total_atenciones_temp = len(secc_temp.CIE10)
 
-    plt.figure()
-    ax = secc_temp['CIE10'].value_counts(dropna=False)[1:21].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
-    ax.set_title(f"Top 20 diagnósticos en {secc} codificados con CIE10")
-    plt.xticks(rotation=0)
-    print(f'Nota: el número de diagnósticos sin codificar en {secc} es: {sin_cod_temp}')
-    print(f'Nota: el número de diagnósticos total en {secc} es: {total_atenciones_temp}')
+    if len(secc_temp['CIE10'].value_counts(dropna=False)) > 1:
+      plt.figure()
+      ax = secc_temp['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+      ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+      plt.xticks(rotation=0)
+    else:
+      plt.figure()
+      ax = secc_temp['CIE10'].value_counts(dropna=False).plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+      ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+      plt.xticks(rotation=0);
  
 
 def medias_tiempo(dataframe):
