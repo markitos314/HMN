@@ -102,7 +102,7 @@ def atenciones_por_seccion(dataframe):
   ax.set_ylabel("")
   
 
- def top_20_professionals(dataframe):
+def top_20_professionals(dataframe):
   secciones = dataframe['SECCION'].unique()
   # Dataframe loop
   for i, secc in enumerate(secciones):
