@@ -101,6 +101,11 @@ def atenciones_por_seccion(dataframe):
   ax.set_title(f"Atenciones por sección (Total = {seccion['CANTIDADES'].sum()})",fontsize=20)
   ax.set_ylabel("")
   
+  # Plot bar
+  plt.figure(figsize=(20,15))
+  seccion_vc.plot(kind='bar',rot=45)
+  plt.title(f"Atenciones por sección (Total = {seccion['CANTIDADES'].sum()})", fontsize=20)
+  
 
 def top_20_professionals(dataframe):
   secciones = dataframe['SECCION'].unique()
