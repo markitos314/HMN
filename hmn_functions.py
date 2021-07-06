@@ -330,3 +330,305 @@ def promedios_tiempo(dataframe):
 #    print(f"Mediana de tiempo entre Alta Médica e Ingreso en {secc}: {secc_temp['DIF_ALTA_MEDICA_INGRESO'].median()}")
 #    print(f"Mediana de tiempo entre Alta administrativa e Ingreso en {secc}: {secc_temp['ESTADIA_TOTAL'].median()}")
 #    print(f"Mediana de tiempo entre Alta administrativa y Alta médica en {secc}: {secc_temp['DIF_ALTA_ADMIN_MEDICA'].median()}")
+
+def preprocess_ambulatorio(path):
+  """
+  Function that preprocesses 'ambulatorio' csv from Pentaho.
+  
+  Args:
+    path (str): Path to csv to preprocess
+
+  Returns:
+    Preprocessed pandas dataframe
+  """
+  # Read csv
+  df = pd.read_csv(path)
+
+  # Get rid of unnecessary columns
+  df = df.drop(columns=['Unnamed: 15'])
+
+  # Get rid of unnecessary rows
+  df = df.drop(range(0,4))
+
+  # Set definitive columns
+  columns = ['DNI', 'NHC', 'PACIENTE', 'SEXO', 'EDAD', 'FECHA_TURNO', 
+             'HORA_TURNO', 'SERVICIO', 'SECCION', 'PRESTACION', 'AGENDA', 
+             'MOTIVO_ALTA', 'DIAGNOSTICO', 'CIE10', 'DESC_CIE10']
+  df.columns=columns
+
+  # Merge 'FECHA_TURNO' and 'HORA_TURNO', so as to convert to datetime
+  df['FECHA_HORA_TURNO'] = df['FECHA_TURNO'] + ' ' + df['HORA_TURNO']
+
+  # Convert dates to datetype format
+  df['FECHA_HORA_TURNO'] = pd.to_datetime(df['FECHA_HORA_TURNO'], dayfirst=True)
+
+  # Drop 'FECHA_TURNO' and 'HORA_TURNO'
+  df = df.drop(columns=['FECHA_TURNO','HORA_TURNO'])
+
+  # Reorder columns
+  columns = ['DNI', 'NHC', 'PACIENTE', 'SEXO', 'EDAD', 'FECHA_HORA_TURNO',
+          'SERVICIO', 'SECCION', 'PRESTACION', 'AGENDA', 
+          'MOTIVO_ALTA', 'DIAGNOSTICO', 'CIE10', 'DESC_CIE10']
+  df = df[columns]
+
+  # Sort by 'AGENDA', then 'FECHA_TURNO', then 'HORA_TURNO'
+  df.sort_values(by=['SERVICIO', 'SECCION', 'FECHA_HORA_TURNO'], inplace=True)
+
+  # Convert numerical srt values to int
+  df['EDAD'] = df['EDAD'].astype(int)
+#  df['DNI'] = df['DNI'].astype(int)
+#  df['NHC'] = df['NHC'].astype(int)
+
+  # Reset index
+  df.reset_index(drop=True, inplace=True)
+  return df
+
+def atenciones(dataframe, por_servicio=True, por_seccion=False, torta=False, barra=True):
+  """
+  Function that generates statistics from emergency dataframe
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns:
+
+  """
+  ### Atenciones por sección
+  variable = ''
+
+  if por_servicio:
+    variable='servicio'
+    # Dataframe
+    df_vc = dataframe['SERVICIO'].value_counts(dropna=False)
+    df = pd.DataFrame(dataframe['SERVICIO'].value_counts(dropna=False))
+    df['%'] = df['SERVICIO'].value_counts(normalize=True)*100
+    df = df.reset_index()
+    df.columns=['SERVICIO','CANTIDADES','% DEL TOTAL']
+    print(f"          Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})\n")
+    display(df)
+    print('\n\n')
+
+  if por_seccion:
+    variable='seccion'
+    df_vc = dataframe['SECCION'].value_counts(dropna=False)
+    df = pd.DataFrame(dataframe['SECCION'].value_counts(dropna=False))
+    df['%'] = dataframe['SECCION'].value_counts(normalize=True)*100
+    df = df.reset_index()
+    df.columns=['SECCION','CANTIDADES','% DEL TOTAL']
+    print(f"          Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})\n")
+    display(df)
+    print('\n\n')   
+
+  
+  if torta:
+    # Plot pie
+    explode_values = np.arange(0,len(servicio)/10,0.1)
+    explode = explode_values
+    plt.figure()
+    ax = df_vc.plot(kind='pie', figsize=(15,10), fontsize=13, autopct="%1.1f%%", explode=explode)
+    ax.set_title(f"Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})",fontsize=20)
+    ax.set_ylabel("")
+
+  if barra:
+    # Plot bar
+    plt.figure(figsize=(20,15))
+    df_vc.plot(kind='bar',rot=45)
+    plt.title(f"Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})", fontsize=20)
+    
+def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccion=False):
+  # Get year and months from dataframe
+  year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
+  months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
+
+  sin_cod = dataframe['CIE10'].isna().sum()
+  total_atenciones = len(dataframe.CIE10)
+
+  plt.figure()
+  ax = dataframe['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+  ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod} | Diagnósticos totales: {total_atenciones}", fontsize=20)
+  plt.xticks(rotation=0)
+  plt.show()
+
+  for i in ax.patches:
+    if i.get_height() < 100:
+      ax.text(i.get_x() + 0.1, i.get_height() + 2, str(i.get_height()), fontsize=13)
+    else:
+      ax.text(i.get_x() - 0.05, i.get_height() + 2, str(i.get_height()), fontsize=13)
+  
+  if por_seccion:
+    # By seccion
+    secciones = dataframe['SECCION'].unique()
+    for i, secc in enumerate(secciones):
+      secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
+      sin_cod_temp = secc_temp['CIE10'].isna().sum()
+      total_atenciones_temp = len(secc_temp.CIE10)
+
+      if len(secc_temp['CIE10'].value_counts(dropna=False)) > 1:
+        plt.figure()
+        ax = secc_temp['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+        ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+        plt.xticks(rotation=0)
+      else:
+        plt.figure()
+        ax = secc_temp['CIE10'].value_counts(dropna=False).plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+        ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+        plt.xticks(rotation=0);
+
+  if por_servicio:  
+    # By service
+    servicios = dataframe['SERVICIO'].unique()
+    for i, serv in enumerate(servicios):
+      serv_temp = pd.DataFrame(dataframe[dataframe['SERVICIO']==servicios[i]])
+      sin_cod_temp = serv_temp['CIE10'].isna().sum()
+      total_atenciones_temp = len(serv_temp.CIE10)
+
+      if len(serv_temp['CIE10'].value_counts(dropna=False)) > 1:
+        plt.figure()
+        ax = serv_temp['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+        ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {serv} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+        plt.xticks(rotation=0)
+      else:
+        plt.figure()
+        ax = serv_temp['CIE10'].value_counts(dropna=False).plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+        ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {serv} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+        plt.xticks(rotation=0);
+
+def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
+  # Get year and months from dataframe
+  year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
+  months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
+
+  df_horas = dataframe.FECHA_HORA_TURNO.dt.hour.value_counts()
+  df_horas = df_horas.sort_index()
+
+  # Plot total
+  plt.figure()
+  ax = df_horas.plot(kind='bar', fontsize=13, figsize=(15,10), color="orange")
+  ax.set_title(f"Cantidad de atenciones según la hora | TOTAL | AMBULATORIO | mes(es) {months[0]} a {months[-1]} de {year}")
+  ax.set_ylabel("Atenciones")
+  plt.xticks(rotation=0)
+
+  for i in ax.patches:
+    if i.get_height() < 1000:
+      ax.text(i.get_x() - 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+    else:
+      ax.text(i.get_x() - 0.21, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+
+  if por_servicio:
+    servicios = dataframe['SERVICIO'].unique()
+
+    # Loop plot by seccion
+    for i, serv in enumerate(servicios):
+      serv_temp = pd.DataFrame(dataframe[dataframe['SERVICIO']==servicios[i]])
+      df_horas_temp = serv_temp.FECHA_HORA_TURNO.dt.hour.value_counts()
+      df_horas_temp = df_horas_temp.sort_index()
+
+      # Plot
+      plt.figure()
+      ax = df_horas_temp.plot(kind='bar', fontsize=13, figsize=(15,10), color="orange")
+      ax.set_title(f"Cantidad de atenciones según la hora | {serv} | AMBULATORIO | mes(es) {months[0]} a {months[-1]} de {year}")
+      ax.set_ylabel("Atenciones")
+      plt.xticks(rotation=0)
+
+  #    for i in ax.patches:
+  #      if i.get_height() < 1000:
+  #        ax.text(i.get_x() - 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+  #      else:
+  #        ax.text(i.get_x() - 0.21, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+
+def atenciones_por_dia_semana_ambulatorio(dataframe, por_servicio=False):
+  # Get months and year of dataframe
+  year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
+  months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
+
+  # Df prepare
+  df_dias = dataframe['FECHA_HORA_TURNO'].dt.dayofweek.value_counts()
+  df_dias.sort_index(inplace=True)
+  df_dias = df_dias.rename({0:'Lunes', 1:'Martes', 2:'Miércoles', 3:'Jueves', 4:'Viernes', 5:'Sábado', 6:'Domingo'})
+
+  # Plot
+  plt.figure()
+  ax = df_dias.plot(kind='bar', fontsize=13, figsize=(15,10), colormap="jet")
+  ax.set_title(f"Cantidad de atenciones en todos los servicios por día de la semana en mes(es) {months[0]} a {months[-1]} de {year}")
+  ax.set_ylabel("Atenciones")
+  plt.xticks(rotation=0)
+  for i in ax.patches:
+    ax.text(i.get_x() + 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+
+  # Df by seccion
+  if por_servicio:
+    servicios = dataframe['SERVICIO'].unique()
+
+    for i, serv in enumerate(servicios):
+      serv_temp = pd.DataFrame(dataframe[dataframe['SERVICIO']==servicios[i]])
+      df_dias = serv_temp['FECHA_HORA_TURNO'].dt.dayofweek.value_counts()
+      df_dias.sort_index(inplace=True)
+      df_dias = df_dias.rename({0:'Lunes', 1:'Martes', 2:'Miércoles', 3:'Jueves', 4:'Viernes', 5:'Sábado', 6:'Domingo'})
+
+      # Plot
+      plt.figure(figsize=(15,15))
+      ax = df_dias.plot(kind='bar', fontsize=13, figsize=(15,10), colormap="jet")
+      ax.set_title(f"Cantidad de atenciones en {serv} por día de la semana en mes(es) {months[0]} a {months[-1]} de {year}")
+      ax.set_ylabel("Atenciones")
+      plt.xticks(rotation=0)
+  #    for i in ax.patches:
+  #      ax.text(i.get_x() + 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+  
+def atenciones_grupo_etareo_ambulatorio(dataframe, por_servicio=False):
+  # Get months and year of dataframe
+  year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
+  months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
+
+  # Group classifier
+  grupos = [0,0,0,0,0,0]
+  for i in range(len(dataframe.EDAD)):
+    if dataframe.EDAD[i] == 0:
+      grupos[0] = grupos[0] + 1
+    elif dataframe.EDAD[i] > 0 and dataframe.EDAD[i] < 14:
+      grupos[1] = grupos[1] + 1
+    elif dataframe.EDAD[i] > 14 and dataframe.EDAD[i] < 22:
+      grupos[2] = grupos[2] + 1
+    elif dataframe.EDAD[i] > 22 and dataframe.EDAD[i] < 41:
+      grupos[3] = grupos[3] + 1
+    elif dataframe.EDAD[i] > 41 and dataframe.EDAD[i] < 61:
+      grupos[4] = grupos[4] + 1
+    else:
+      grupos[5] = grupos[5] + 1
+
+  # Plot  
+  plt.figure()  
+  labels=['0 años', '1 a 13', '14 a 21', '22 a 40', '41 a 60', '+61']
+  fig = plt.figure(figsize=(15,10))
+  explode=[0.1,0.1,0.1,0,0.1,0.1]
+  plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
+  plt.title(f"Atenciones según grupo etáreo | AMBULATORIO | mes(es) {months[0]} a {months[-1]} de {year}");
+
+  if por_servicio:
+    # By seccion
+    servicios = dataframe['SERVICIO'].unique()
+
+    for j, serv in enumerate(servicios):
+      serv_temp = pd.DataFrame(dataframe[dataframe['SERVICIO']==servicios[j]])
+      serv_temp.reset_index(drop=True, inplace=True)
+      grupos = [0,0,0,0,0,0]
+      for k in range(len(serv_temp.EDAD)):
+        if serv_temp.EDAD[k] == 0:
+          grupos[0] = grupos[0] + 1
+        elif serv_temp.EDAD[k] > 0 and serv_temp.EDAD[k] < 14:
+          grupos[1] = grupos[1] + 1
+        elif serv_temp.EDAD[k] > 14 and serv_temp.EDAD[k] < 22:
+          grupos[2] = grupos[2] + 1
+        elif serv_temp.EDAD[k] > 22 and serv_temp.EDAD[k] < 41:
+          grupos[3] = grupos[3] + 1
+        elif serv_temp.EDAD[k] > 41 and serv_temp.EDAD[k] < 61:
+          grupos[4] = grupos[4] + 1
+        else:
+          grupos[5] = grupos[5] + 1
+        
+      # Plot  
+      labels=['0 años', '1 a 13', '14 a 21', '22 a 40', '41 a 60', '+61']
+      fig = plt.figure(figsize=(15,10))
+      explode=[0.1,0.1,0.1,0,0.1,0.1]
+      plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
+      plt.title(f"Atenciones según grupo etáreo | {serv.upper()} | mes(es) {months[0]} a {months[-1]} de {year}")
+      
