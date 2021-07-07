@@ -622,7 +622,7 @@ def atenciones_por_dia_semana_ambulatorio(dataframe, por_servicio=False):
   ax.set_ylabel("Atenciones")
   plt.xticks(rotation=0)
   for i in ax.patches:
-    ax.text(i.get_x() + 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+    ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
   # Df by seccion
   if por_servicio:
@@ -640,8 +640,8 @@ def atenciones_por_dia_semana_ambulatorio(dataframe, por_servicio=False):
       ax.set_title(f"Cantidad de atenciones en {serv} por día de la semana en mes(es) {months[0]} a {months[-1]} de {year}")
       ax.set_ylabel("Atenciones")
       plt.xticks(rotation=0)
-  #    for i in ax.patches:
-  #      ax.text(i.get_x() + 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+      for i in ax.patches:
+        ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
   
 def atenciones_grupo_etareo_ambulatorio(dataframe, por_servicio=False):
   # Get months and year of dataframe
