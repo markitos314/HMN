@@ -428,46 +428,69 @@ def atenciones(dataframe, por_servicio=True, por_seccion=False, torta=False, bar
 
   """
   ### Atenciones por sección
-  variable = ''
 
   if por_servicio:
-    variable='servicio'
-    # Dataframe
-    df_vc = dataframe['SERVICIO'].value_counts(dropna=False)
+    # Create dataframe with all servicios
     df = pd.DataFrame(dataframe['SERVICIO'].value_counts(dropna=False))
-    df['%'] = df['SERVICIO'].value_counts(normalize=True)*100
+    # Calculate % of total
+    df['%'] = df.iloc[:,0]/df['SERVICIO'].sum()*100
+    # Reset indexes
     df = df.reset_index()
-    df.columns=['SERVICIO','CANTIDADES','% DEL TOTAL']
-    print(f"          Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})\n")
+    # Rename columns
+    df.columns=['SERVICIO','CANTIDADES','% TOTAL']
+    print(f"Atenciones por servicio (Total = {df['CANTIDADES'].sum()})\n")
     display(df)
     print('\n\n')
 
+    if torta:
+      # Plot pie
+      explode_values = np.arange(0,len(df['SERVICIO'])/10,0.1)
+      explode = explode_values
+      df_bar = df.set_index('SERVICIO') #change index for plotting SERVICIOS not numbers
+      plt.figure()
+      ax = df_bar.plot(kind='pie', y='CANTIDADES', figsize=(15,10), fontsize=13, autopct="%0.2f%%", explode=explode, legend=False)
+      ax.set_title(f"Atenciones por servicio (Total = {df_bar['CANTIDADES'].sum()})",fontsize=20)
+
+    if barra:
+      # Plot bar
+      plt.figure()
+      ax = df.plot.bar('SERVICIO','CANTIDADES',rot=45, figsize=(20,15), fontsize=18)
+      plt.title(f"Atenciones por servicio (Total = {df['CANTIDADES'].sum()})", fontsize=20)
+      for i in ax.patches:
+        ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
+
   if por_seccion:
-    variable='seccion'
-    df_vc = dataframe['SECCION'].value_counts(dropna=False)
-    df = pd.DataFrame(dataframe['SECCION'].value_counts(dropna=False))
-    df['%'] = dataframe['SECCION'].value_counts(normalize=True)*100
-    df = df.reset_index()
-    df.columns=['SECCION','CANTIDADES','% DEL TOTAL']
-    print(f"          Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})\n")
-    display(df)
-    print('\n\n')   
+    # Get all servicios
+    servicios = dataframe['SERVICIO'].unique()
+    for i, secc in enumerate(servicios):
+      # Create dataframe with only servicios[i]
+      df = pd.DataFrame(dataframe[dataframe['SERVICIO']==servicios[i]])
+      # Create dataframe with value counts of servicios[i]
+      df = pd.DataFrame(df['SECCION'].value_counts(dropna=False))
+      # Reset indexes
+      df = df.reset_index()
+      # Set columns names
+      df.columns=['SECCION','CANTIDADES']
+      print(f"Atenciones en {servicios[i]} (Total = {df['CANTIDADES'].sum()})\n")
+      display(df)
+      print('\n\n')
 
-  
-  if torta:
-    # Plot pie
-    explode_values = np.arange(0,len(servicio)/10,0.1)
-    explode = explode_values
-    plt.figure()
-    ax = df_vc.plot(kind='pie', figsize=(15,10), fontsize=13, autopct="%1.1f%%", explode=explode)
-    ax.set_title(f"Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})",fontsize=20)
-    ax.set_ylabel("")
+      if torta:
+        # Plot pie
+        explode_values = np.arange(0,len(df['SECCION'])/10,0.1)
+        explode = explode_values
+        df_bar = df.set_index('SECCION') #change index for plotting SERVICIOS not numbers
+        plt.figure()
+        ax = df_bar.plot(kind='pie', y='CANTIDADES', figsize=(15,10), fontsize=13, autopct="%0.2f%%", explode=explode, legend=False)
+        ax.set_title(f"Atenciones en {servicios[i]} (Total = {df_bar['CANTIDADES'].sum()})",fontsize=20)
 
-  if barra:
-    # Plot bar
-    plt.figure(figsize=(20,15))
-    df_vc.plot(kind='bar',rot=45)
-    plt.title(f"Atenciones por {variable} (Total = {df['CANTIDADES'].sum()})", fontsize=20)
+      if barra:
+        # Plot bar
+        plt.figure()
+        ax = df.plot.bar('SECCION','CANTIDADES', rot=45, figsize=(20,15), fontsize=18)
+        plt.title(f"Atenciones en {servicios[i]} (Total = {df['CANTIDADES'].sum()})", fontsize=20)
+        for i in ax.patches:
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
     
 def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccion=False):
   # Get year and months from dataframe
