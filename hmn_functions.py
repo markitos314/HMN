@@ -150,7 +150,7 @@ def top_20_professionals(dataframe, por_seccion=False):
       for i in ax.patches:
         ax.text(i.get_x(), i.get_height()*1.02, str(i.get_height()), fontsize=13, color='dimgrey')
   
-def atenciones_por_hora(dataframe):
+def atenciones_por_hora(dataframe, por_servicio=False):
   df_horas = dataframe.FECHA_HORA_INGRESO.dt.hour.value_counts()
   df_horas = df_horas.sort_index()
 
@@ -163,31 +163,31 @@ def atenciones_por_hora(dataframe):
 
   for i in ax.patches:
     if i.get_height() < 1000:
-      ax.text(i.get_x() - 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+      ax.text(i.get_x()-i.get_width()/4, i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
     else:
-      ax.text(i.get_x() - 0.21, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+      ax.text(i.get_x()-i.get_width()/2, i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
-  secciones = dataframe['SECCION'].unique()
+  if por_servicio:
+    secciones = dataframe['SECCION'].unique()
 
-  # Loop plot by seccion
-  for i, secc in enumerate(secciones):
-    secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
-    df_horas_temp = secc_temp.FECHA_HORA_INGRESO.dt.hour.value_counts()
-    df_horas_temp = df_horas_temp.sort_index()
+    # Loop plot by seccion
+    for i, secc in enumerate(secciones):
+      secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
+      df_horas_temp = secc_temp.FECHA_HORA_INGRESO.dt.hour.value_counts()
+      df_horas_temp = df_horas_temp.sort_index()
 
-    # Plot
-    plt.figure()
-    ax = df_horas_temp.plot(kind='bar', fontsize=13, figsize=(15,10), color="orange")
-    ax.set_title(f"Cantidad de atenciones según la hora | {secc} | GUARDIA | 2021")
-    ax.set_ylabel("Atenciones")
-    plt.xticks(rotation=0)
+      # Plot
+      plt.figure()
+      ax = df_horas_temp.plot(kind='bar', fontsize=13, figsize=(15,10), color="orange")
+      ax.set_title(f"Cantidad de atenciones según la hora | {secc} | GUARDIA | 2021")
+      ax.set_ylabel("Atenciones")
+      plt.xticks(rotation=0)
 
-#    for i in ax.patches:
-#      if i.get_height() < 1000:
-#        ax.text(i.get_x() - 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
-#      else:
-#        ax.text(i.get_x() - 0.21, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
-
+      for i in ax.patches:
+        if i.get_height() < 1000:
+          ax.text(i.get_x()-i.get_width()/4, i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+        else:
+          ax.text(i.get_x()-i.get_width()/2, i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
 def atenciones_por_dia_semana(dataframe):
   # Df prepare
