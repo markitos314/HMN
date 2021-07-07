@@ -297,40 +297,49 @@ def motivo_alta(dataframe):
       ax.text(i.get_width() + 20, i.get_y() + .20, str(i.get_width()), fontsize=13, color='black')
 
 
-def top_20_cod_diagnostics(dataframe):
+def top_20_cod_diagnostics(dataframe, por_seccion):
+  # Df prep
   sin_cod = dataframe['CIE10'].isna().sum()
   total_atenciones = len(dataframe.CIE10)
 
+  # Plot
   plt.figure()
   ax = dataframe['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
   ax.set_title(f"Top 20 diagnósticos codificados con CIE10\nDiagnósticos sin codificar: {sin_cod} | Diagnósticos totales: {total_atenciones}", fontsize=20)
-  plt.xticks(rotation=0)
-  plt.show()
+  plt.xticks(rotation=20)
 
+  # Write totals
   for i in ax.patches:
     if i.get_height() < 100:
-      ax.text(i.get_x() + 0.1, i.get_height() + 2, str(i.get_height()), fontsize=13)
+      ax.text(i.get_x()*1.01, i.get_height() + 2, str(i.get_height()), fontsize=13, color='grey')
     else:
-      ax.text(i.get_x() - 0.05, i.get_height() + 2, str(i.get_height()), fontsize=13)
+      ax.text(i.get_x()*1.02, i.get_height() + 2, str(i.get_height()), fontsize=13, color='grey')
   
-  # By seccion
-  secciones = dataframe['SECCION'].unique()
-  for i, secc in enumerate(secciones):
-    secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
-    sin_cod_temp = secc_temp['CIE10'].isna().sum()
-    total_atenciones_temp = len(secc_temp.CIE10)
+  if por_seccion:
+    # By seccion
+    secciones = dataframe['SECCION'].unique()
+    for i, secc in enumerate(secciones):
+      secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
+      sin_cod_temp = secc_temp['CIE10'].isna().sum()
+      total_atenciones_temp = len(secc_temp.CIE10)
 
-    if len(secc_temp['CIE10'].value_counts(dropna=False)) > 1:
-      plt.figure()
-      ax = secc_temp['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
-      ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
-      plt.xticks(rotation=0)
-    else:
-      plt.figure()
-      ax = secc_temp['CIE10'].value_counts(dropna=False).plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
-      ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
-      plt.xticks(rotation=0);
- 
+      if len(secc_temp['CIE10'].value_counts(dropna=False)) > 1:
+        plt.figure()
+        ax = secc_temp['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+        ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+        plt.xticks(rotation=20)
+      else:
+        plt.figure()
+        ax = secc_temp['CIE10'].value_counts(dropna=False).plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
+        ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
+        plt.xticks(rotation=20);
+
+      # Write totals
+      for i in ax.patches:
+        if i.get_height() < 100:
+          ax.text(i.get_x()*1.01, i.get_height()*1.02, str(i.get_height()), fontsize=13, color='grey')
+        else:
+          ax.text(i.get_x()*1.02, i.get_height()*1.02, str(i.get_height()), fontsize=13, color='grey') 
 
 def promedios_tiempo(dataframe):
   print('Medias de tiempo según estado del paciente:')
