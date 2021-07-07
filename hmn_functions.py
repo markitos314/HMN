@@ -106,28 +106,49 @@ def atenciones_por_seccion(dataframe):
   seccion_vc.plot(kind='bar',rot=45)
   plt.title(f"Atenciones por sección (Total = {seccion['CANTIDADES'].sum()})", fontsize=20)
   
+def top_20_professionals(dataframe, por_seccion=False):
+  # Prepare df
+  df = pd.DataFrame(dataframe['PROFESIONAL'].value_counts(dropna=False)[:20])
+  df['% TOTAL'] = dataframe['PROFESIONAL'].value_counts(dropna=False, normalize=True) *100
+  df = df.reset_index()
+  df.columns=['PROFESIONAL','ATENCIONES','% TOTAL']
+  print(f'Top 20 profesionales con mayoeres atenciones en todos los servicios')
+  display (df)
+  print('\n')
+  
+  # Plot bar
+  ax = df.plot.bar('PROFESIONAL', 'ATENCIONES', rot=45, figsize=(20,15))
+  plt.title(f'Top 20 profesionales con mayores atenciones en todos los servicios')
+  ax.set_ylabel("Cantidad de atenciones")
+  ax.set_xlabel("Profesionales")
 
-def top_20_professionals(dataframe):
-  secciones = dataframe['SECCION'].unique()
-  # Dataframe loop
-  for i, secc in enumerate(secciones):
-    secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
-    professional_vc = secc_temp['PROFESIONAL'].value_counts(dropna=False)[:20]
-    professional = pd.DataFrame(secc_temp['PROFESIONAL'].value_counts(dropna=False))[:20]
-    professional = professional.reset_index()
-    professional.columns=['PROFESIONAL','ATENCIONES']
-    print(f'Top 20 profesionales en atenciones de {secc}')
-    display(professional)
-    print('\n\n')
-    
-    # Graficamos con totales
-    ax = professional.plot(kind='bar', figsize=(20,10), fontsize=12)
-    ax.set_title(f"Top 20 profesionales en atenciones de {secc}")
-    ax.set_ylabel("Cantidad de atenciones")
-    plt.xticks(rotation=70)
+  # Write totals
+  for i in ax.patches:
+    ax.text(i.get_x(), i.get_height()*1.02, str(i.get_height()), fontsize=13, color='dimgrey')
 
-    #for i in ax.patches:
-    #  ax.text(i.get_x(), i.get_height() + 15, str(i.get_height()), fontsize=13, color='dimgrey')
+  if por_seccion:
+    secciones = dataframe['SECCION'].unique()
+    # Dataframe loop
+    for i, secc in enumerate(secciones):
+      secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
+      professional = pd.DataFrame(secc_temp['PROFESIONAL'].value_counts(dropna=False))[:20]
+      professional['% TOTAL'] = secc_temp['PROFESIONAL'].value_counts(dropna=False, normalize=True)*100
+      professional = professional.reset_index()
+      professional.columns=['PROFESIONAL','ATENCIONES', '% TOTAL']
+      print(f'Top 20 profesionales en atenciones de {secc}')
+      display(professional)
+      print('\n')
+      
+      # Plot bar
+      ax = professional.plot.bar('PROFESIONAL', 'ATENCIONES', figsize=(20,10), fontsize=12)
+      ax.set_title(f"Top 20 profesionales en atenciones de {secc}")
+      ax.set_ylabel("Cantidad de atenciones")
+      ax.set_xlabel("Profesionales")
+      plt.xticks(rotation=45)
+
+      # Write totals
+      for i in ax.patches:
+        ax.text(i.get_x(), i.get_height()*1.02, str(i.get_height()), fontsize=13, color='dimgrey')
   
 def atenciones_por_hora(dataframe):
   df_horas = dataframe.FECHA_HORA_INGRESO.dt.hour.value_counts()
