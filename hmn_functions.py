@@ -189,7 +189,7 @@ def atenciones_por_hora(dataframe, por_servicio=False):
         else:
           ax.text(i.get_x()-i.get_width()/2, i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
-def atenciones_por_dia_semana(dataframe):
+def atenciones_por_dia_semana(dataframe, por_seccion):
   # Df prepare
   df_dias = dataframe['FECHA_HORA_INGRESO'].dt.dayofweek.value_counts()
   df_dias.sort_index(inplace=True)
@@ -201,27 +201,31 @@ def atenciones_por_dia_semana(dataframe):
   ax.set_title("Cantidad de atenciones en todos los servicios por día de la semana")
   ax.set_ylabel("Atenciones")
   plt.xticks(rotation=0)
+
+  # Write totals
   for i in ax.patches:
-    ax.text(i.get_x() + 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+    ax.text(i.get_x() + 0.1, i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
-  # Df by seccion
-  secciones = dataframe['SECCION'].unique()
+  if por_seccion:
+    # Df by seccion
+    secciones = dataframe['SECCION'].unique()
 
-  for i, secc in enumerate(secciones):
-    secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
-    df_dias = secc_temp['FECHA_HORA_INGRESO'].dt.dayofweek.value_counts()
-    df_dias.sort_index(inplace=True)
-    df_dias = df_dias.rename({0:'Lunes', 1:'Martes', 2:'Miércoles', 3:'Jueves', 4:'Viernes', 5:'Sábado', 6:'Domingo'})
+    for i, secc in enumerate(secciones):
+      secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
+      df_dias = secc_temp['FECHA_HORA_INGRESO'].dt.dayofweek.value_counts()
+      df_dias.sort_index(inplace=True)
+      df_dias = df_dias.rename({0:'Lunes', 1:'Martes', 2:'Miércoles', 3:'Jueves', 4:'Viernes', 5:'Sábado', 6:'Domingo'})
 
-    # Plot
-    plt.figure(figsize=(15,15))
-    ax = df_dias.plot(kind='bar', fontsize=13, figsize=(15,10), colormap="jet")
-    ax.set_title(f"Cantidad de atenciones en {secc} por día de la semana")
-    ax.set_ylabel("Atenciones")
-    plt.xticks(rotation=0)
-#    for i in ax.patches:
-#      ax.text(i.get_x() + 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+      # Plot
+      plt.figure(figsize=(15,15))
+      ax = df_dias.plot(kind='bar', fontsize=13, figsize=(15,10), colormap="jet")
+      ax.set_title(f"Cantidad de atenciones en {secc} por día de la semana")
+      ax.set_ylabel("Atenciones")
+      plt.xticks(rotation=0)
 
+      # Write totals
+      for i in ax.patches:
+        ax.text(i.get_x() + 0.1, i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
 def atenciones_grupo_etareo(dataframe):
   # Group classifier
