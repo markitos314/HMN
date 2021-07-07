@@ -504,13 +504,10 @@ def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccio
   ax = dataframe['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
   ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod} | Diagnósticos totales: {total_atenciones}", fontsize=20)
   plt.xticks(rotation=0)
-  plt.show()
-
+  
+  # Write totals in plot
   for i in ax.patches:
-    if i.get_height() < 100:
-      ax.text(i.get_x() + 0.1, i.get_height() + 2, str(i.get_height()), fontsize=13)
-    else:
-      ax.text(i.get_x() - 0.05, i.get_height() + 2, str(i.get_height()), fontsize=13)
+    ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
   
   if por_seccion:
     # By seccion
@@ -525,11 +522,19 @@ def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccio
         ax = secc_temp['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
         ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
         plt.xticks(rotation=0)
+
+        # Write totals in plot
+        for i in ax.patches:
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
+      
       else:
         plt.figure()
         ax = secc_temp['CIE10'].value_counts(dropna=False).plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
         ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {secc} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
         plt.xticks(rotation=0);
+        # Write totals in plot
+        for i in ax.patches:
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
   if por_servicio:  
     # By service
@@ -544,12 +549,18 @@ def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccio
         ax = serv_temp['CIE10'].value_counts()[:20].plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
         ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {serv} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
         plt.xticks(rotation=0)
+        # Write totals in plot
+        for i in ax.patches:
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
+
       else:
         plt.figure()
         ax = serv_temp['CIE10'].value_counts(dropna=False).plot(kind="bar", figsize=(15,10), fontsize=13, color="brown")
         ax.set_title(f"Top 20 diagnósticos codificados con CIE10 en {serv} en mes(es) {months[0]} a {months[-1]} de {year}\nDiagnósticos sin codificar: {sin_cod_temp} | Diagnósticos totales: {total_atenciones_temp}", fontsize=20)
-        plt.xticks(rotation=0);
-
+        plt.xticks(rotation=0)
+        # Write totals in plot
+        for i in ax.patches:
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
   # Get year and months from dataframe
   year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
@@ -688,4 +699,3 @@ def atenciones_grupo_etareo_ambulatorio(dataframe, por_servicio=False):
       explode=[0.1,0.1,0.1,0,0.1,0.1]
       plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
       plt.title(f"Atenciones según grupo etáreo | {serv.upper()} | mes(es) {months[0]} a {months[-1]} de {year}")
-      
