@@ -561,6 +561,7 @@ def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccio
         # Write totals in plot
         for i in ax.patches:
           ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
+          
 def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
   # Get year and months from dataframe
   year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
@@ -578,9 +579,9 @@ def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
 
   for i in ax.patches:
     if i.get_height() < 1000:
-      ax.text(i.get_x() - 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+      ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
     else:
-      ax.text(i.get_x() - 0.21, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
+      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
   if por_servicio:
     servicios = dataframe['SERVICIO'].unique()
@@ -598,12 +599,12 @@ def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
       ax.set_ylabel("Atenciones")
       plt.xticks(rotation=0)
 
-  #    for i in ax.patches:
-  #      if i.get_height() < 1000:
-  #        ax.text(i.get_x() - 0.1, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
-  #      else:
-  #        ax.text(i.get_x() - 0.21, i.get_height() + 12, str(int(i.get_height())), fontsize=13, color='dimgrey')
-
+      for i in ax.patches:
+        if i.get_height() < 1000:
+          ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+        else:
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
+          
 def atenciones_por_dia_semana_ambulatorio(dataframe, por_servicio=False):
   # Get months and year of dataframe
   year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
