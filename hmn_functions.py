@@ -868,10 +868,10 @@ def cirugias_plot(dataframe):
 
   # line
   fig, (ax1,ax2) = plt.subplots(2,1, figsize=(20,15))
-  cirugias.plot(x_compat=True, ax=ax1)
+  dataframe.plot(x_compat=True, ax=ax1)
   ax1.set_title(f'Cirugías en mes(es) {months[0]} a {months[-1]} de {year}')
   # bar
-  cirugias.sum().plot.bar(rot=0, ax=ax2)
+  dataframe.sum().plot.bar(rot=0, ax=ax2)
   ax2.set_title(f'Cirugías en mes(es) {months[0]} a {months[-1]} de {year}')
   for i in ax2.patches:
     ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
