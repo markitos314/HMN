@@ -875,3 +875,87 @@ def cirugias_plot(dataframe):
   ax2.set_title(f'Cirugías en mes(es) {months[0]} a {months[-1]} de {year}')
   for i in ax2.patches:
     ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+
+def preprocess_lab(path):
+  lab = pd.read_csv(path)
+  lab = lab.drop(index=[0,1,2,3,4,5])
+  lab = lab.drop(columns=['Unnamed: 7','Unnamed: 8','Unnamed: 9','Unnamed: 10','Unnamed: 11','Unnamed: 12','Unnamed: 13','Unnamed: 14','Unnamed: 15'])
+  lab.columns=['PETICION','PRUEBA','FECHA','HC','DNI','PACIENTE','AMBITO']
+  lab['FECHA'] = pd.to_datetime(lab['FECHA'], dayfirst=True)
+  lab = lab.sort_values(by='FECHA')
+  lab = lab.reset_index(drop=True)
+  return lab
+    
+def labo_all(dataframe):
+  # Useful data
+  total_tipo_pruebas = dataframe.PRUEBA.unique().shape[0]
+  total_pacientes = dataframe.PACIENTE.unique().shape[0]
+  total_pruebas = dataframe.index[-1] + 1
+  year = pd.DatetimeIndex(dataframe['FECHA']).year.unique()[0] 
+  months = pd.DatetimeIndex(dataframe['FECHA']).month.unique()
+
+  # Plot pruebas
+  fig, ax = plt.subplots(figsize=(15,7))
+  dataframe.PRUEBA.value_counts()[:30].plot.bar(ax=ax)
+  ax.set_title(f'Peticiones realizadas en mes(es) {months[0]} a {months[-1]} de {year}\n Total de pruebas: {total_pruebas}\nTotal tipo de pruebas: {total_tipo_pruebas}')
+  ax.set_xlabel('Pruebas')
+  ax.set_ylabel('Cantidad de peticiones')  
+  for i in ax.patches:
+    if i.get_height() < 1000:
+      ax.text(i.get_x(), i.get_height()*1.03, str(int(i.get_height())), fontsize=10, color='dimgrey')
+    else:
+      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')  
+
+  # Plot hours
+  fig, ax = plt.subplots(figsize=(10,7))
+  df_hours = lab.FECHA.dt.hour.value_counts()
+  df_hours = df_hours.sort_index()
+  df_hours.plot.bar(rot=0, ax=ax);
+  ax.set_title(f'Peticiones realizadas por hora en mes(es) {months[0]} a {months[-1]} de {year}\n Total de pruebas: {total_pruebas}\nTotal tipo de pruebas: {total_tipo_pruebas}')
+  ax.set_xlabel('HORAS')
+  ax.set_ylabel('Cantidad de peticiones')  
+  for i in ax.patches:
+    if i.get_height() < 1000:
+      ax.text(i.get_x(), i.get_height()*1.03, str(int(i.get_height())), fontsize=10, color='dimgrey')
+    else:
+      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')
+
+  # Plot days
+  df_days = pd.DataFrame({'DIAS':['Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo'],
+                        'PRUEBAS':dataframe.FECHA.dt.dayofweek.value_counts().sort_index()})
+  df_days = df_days.set_index('DIAS')
+  fig, ax = plt.subplots(figsize=(10,7))
+  df_days.plot.bar(rot=0, ax=ax)
+  ax.set_title(f'Peticiones realizadas por día en mes(es) {months[0]} a {months[-1]} de {year}\n Total de pruebas: {total_pruebas}\nTotal tipo de pruebas: {total_tipo_pruebas}')
+  ax.set_xlabel('DIAS')
+  ax.set_ylabel('Cantidad de peticiones')
+  for i in ax.patches:
+    if i.get_height() < 1000:
+      ax.text(i.get_x(), i.get_height()*1.03, str(int(i.get_height())), fontsize=10, color='dimgrey')
+    else:
+      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')
+  
+  # Plot months
+  df_months = pd.Series(dataframe.FECHA.dt.month.value_counts().sort_index(), name='PRUEBAS')
+  fig, ax = plt.subplots(figsize=(10,7))
+  df_months.plot.bar(rot=0, ax=ax)
+  ax.set_title(f'Peticiones realizadas por mes en mes(es) {months[0]} a {months[-1]} de {year}\n Total de pruebas: {total_pruebas}\nTotal tipo de pruebas: {total_tipo_pruebas}')
+  ax.set_xlabel('MESES')
+  ax.set_ylabel('Cantidad de peticiones')
+  for i in ax.patches:
+    if i.get_height() < 1000:
+      ax.text(i.get_x(), i.get_height()*1.03, str(int(i.get_height())), fontsize=10, color='dimgrey')
+    else:
+      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')  
+  
+  # Plot ámbito
+  fig, ax = plt.subplots(figsize=(10,7))
+  dataframe.AMBITO.value_counts().plot.bar(rot=0, ax=ax)
+  ax.set_title(f'Peticiones realizadas por sector en mes(es) {months[0]} a {months[-1]} de {year}\n Total de pruebas: {total_pruebas}\nTotal tipo de pruebas: {total_tipo_pruebas}')
+  ax.set_xlabel('SECTORES')
+  ax.set_ylabel('Cantidad de peticiones')  
+  for i in ax.patches:
+    if i.get_height() < 1000:
+      ax.text(i.get_x(), i.get_height()*1.03, str(int(i.get_height())), fontsize=10, color='dimgrey')
+    else:
+      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')       
