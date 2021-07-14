@@ -701,7 +701,7 @@ def atenciones_grupo_etareo_ambulatorio(dataframe, por_servicio=False):
       plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
       plt.title(f"Atenciones según grupo etáreo | {serv.upper()} | mes(es) {months[0]} a {months[-1]} de {year}")
       
- def preprocess_hospitalizacion(path):
+def preprocess_hospitalizacion(path):
   """
   Function that preprocesses 'hospitalizacion' csv from Pentaho.
   
