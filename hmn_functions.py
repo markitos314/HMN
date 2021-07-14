@@ -700,3 +700,135 @@ def atenciones_grupo_etareo_ambulatorio(dataframe, por_servicio=False):
       explode=[0.1,0.1,0.1,0,0.1,0.1]
       plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
       plt.title(f"Atenciones según grupo etáreo | {serv.upper()} | mes(es) {months[0]} a {months[-1]} de {year}")
+      
+ def preprocess_hospitalizacion(path):
+  """
+  Function that preprocesses 'hospitalizacion' csv from Pentaho.
+  
+  Args:
+    path (str): Path to csv to preprocess
+  Returns:
+    Preprocessed pandas dataframe
+  """
+  # Read csv
+  df = pd.read_csv(path)
+
+  # Get rid of unnecessary columns
+  df.drop(columns=[f'Unnamed: {i}' for i in range(16,24,1)], inplace=True)
+  df.drop(columns=['Unnamed: 0'], inplace=True)
+
+  # Get rid of unnecessary rows
+  df.drop(range(0,6), inplace=True)
+
+  # Set definitive columns
+  columns = ['DNI', 'NHC', 'PACIENTE', 'SEXO', 'EDAD', 'FECHA_HORA_INGRESO', 
+          'SERVICIO', 'SECCION', 'ALTA_MEDICA', 'MOTIVO_ALTA', 'ALTA_ADMIN', 
+          'PROFESIONAL', 'DIAGNOSTICO_LIBRE', 'CIE10', 'DESC_CIE10']
+  df.columns=columns
+
+  # Convert dates to datetype format
+  df['ALTA_ADMIN'] = pd.to_datetime(df['ALTA_ADMIN'], dayfirst=True)
+  df['ALTA_MEDICA'] = pd.to_datetime(df['ALTA_MEDICA'], dayfirst=True)
+  df['FECHA_HORA_INGRESO'] = pd.to_datetime(df['FECHA_HORA_INGRESO'], dayfirst=True)
+
+  # Create time difference columns
+  df['DIF_ALTA_ADMIN_MEDICA'] = df['ALTA_ADMIN'] - df['ALTA_MEDICA']
+  df['DIF_ALTA_MEDICA_INGRESO'] = df['ALTA_MEDICA'] - df['FECHA_HORA_INGRESO']
+  df['ESTADIA_TOTAL'] = df['ALTA_ADMIN'] - df['FECHA_HORA_INGRESO']
+
+  # Sort by 'FECHA_HORA_INGRESO'
+  df.sort_values(by=['FECHA_HORA_INGRESO', 'SERVICIO'], inplace=True)
+
+  # Convert numerical srt values to int
+  df['EDAD'] = df['EDAD'].astype(int)
+#  df['DNI'] = df['DNI'].astype(int)
+#  df['NHC'] = df['NHC'].astype(int)
+
+  # Reset index
+  df.reset_index(drop=True, inplace=True)
+  return df
+
+def atenciones_hosp(dataframe):
+  # Defino los dos servicios principales
+  toco = dataframe[dataframe['SERVICIO']=='Tocoginecología']
+  neo = dataframe[dataframe['SERVICIO']=='Neonatología']
+  # Genero df's con totales
+  toco_df = pd.DataFrame({'ATENCIONES':toco['SECCION'].value_counts(),
+                          '% TOTAL':np.round(toco['SECCION'].value_counts(normalize=True)*100,2)})
+  neo_df = pd.DataFrame({'ATENCIONES':neo['SECCION'].value_counts(),
+                         '% TOTAL':np.round(neo['SECCION'].value_counts(normalize=True)*100,2)})
+  print(f'Atenciones en Tocoginecología | HOSPITALIZACIÓN (Total = {toco_df.ATENCIONES.sum()})')
+  display(toco_df)
+  print('\n')
+  print(f'Atenciones en Neonatología | HOSPITALIZACIÓN (Total = {neo_df.ATENCIONES.sum()})')
+  display(neo_df)
+  print('\n')
+
+  # Plot
+  fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(20,20))
+  toco_df.ATENCIONES.plot.bar(rot=45, ax=ax1)
+  neo_df.ATENCIONES.plot.bar(rot=45, ax=ax2)
+  toco_df.plot.pie(y='ATENCIONES',
+                   ax=ax3,
+                   autopct="%.2f")
+  neo_df.plot.pie(y='ATENCIONES',
+                  ax=ax4,
+                  autopct="%.2f")
+  ax1.set_title(f'Atenciones en Tocoginecología | HOSPITALIZACIÓN (Total = {toco_df.ATENCIONES.sum()})')
+  ax2.set_title(f'Atenciones en Neonatología | HOSPITALIZACIÓN (Total = {neo_df.ATENCIONES.sum()})')
+  ax3.set_title(f'Atenciones en Tocoginecología | HOSPITALIZACIÓN (Total = {toco_df.ATENCIONES.sum()})')
+  ax4.set_title(f'Atenciones en Neonatología | HOSPITALIZACIÓN (Total = {neo_df.ATENCIONES.sum()})')
+  for i in ax1.patches:
+    ax1.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+  for i in ax2.patches:
+    ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+    
+def top_20_professionals_hosp(dataframe):
+  # Get year and months from dataframe
+  year = dataframe.FECHA_HORA_INGRESO.dt.year.unique()[0]
+  months = dataframe.FECHA_HORA_INGRESO.dt.month.unique()
+
+  # Defino los dos servicios principales
+  toco = dataframe[dataframe['SERVICIO']=='Tocoginecología']
+  neo = dataframe[dataframe['SERVICIO']=='Neonatología']
+
+  # Me quedo con las columnas que quiero solamente
+  toco_df = pd.DataFrame({'ATENCIONES':toco['PROFESIONAL'].value_counts(),
+                          '% TOTAL':np.round(toco['PROFESIONAL'].value_counts(normalize=True)*100,2)})
+  neo_df = pd.DataFrame({'ATENCIONES':neo['PROFESIONAL'].value_counts(),
+                          'SECCION':np.round(neo['PROFESIONAL'].value_counts(normalize=True)*100,2)})
+  print(f'Top 20 profesionales con más atenciones en Tocoginecología\nHOSPITALIZACIÓN | mes(es) {months[0]} a {months[-1]} de {year}')
+  display(toco_df[:20])
+  print('\n\n')
+  print(f'Top 20 profesionales con más atenciones en Neonatología\nHOSPITALIZACIÓN | mes(es) {months[0]} a {months[-1]} de {year}')
+  display(neo_df[:20])
+
+  # Graficamos con totales
+  fig, ((ax1, ax2)) = plt.subplots(2,1, figsize=(20,20))
+  toco_df.ATENCIONES[:20].plot.bar(rot=45, ax=ax1)
+  neo_df.ATENCIONES[:20].plot.bar(rot=45, ax=ax2)
+  ax1.set_title(f'Top 20 profesionales con más atenciones en Tocoginecología (Total = {toco_df.ATENCIONES.sum()})\nHOSPITALIZACIÓN | mes(es) {months[0]} a {months[-1]} de {year}')
+  ax2.set_title(f'Top 20 profesionales con más atenciones en Neonatología (Total = {neo_df.ATENCIONES.sum()})\nHOSPITALIZACIÓN | mes(es) {months[0]} a {months[-1]} de {year}')
+  for i in ax1.patches:
+    ax1.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+  for i in ax2.patches:
+    ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+    
+def atenciones_por_hora_hosp(dataframe):
+  # Get year and months from dataframe
+  year = dataframe.FECHA_HORA_INGRESO.dt.year.unique()[0]
+  months = dataframe.FECHA_HORA_INGRESO.dt.month.unique()
+
+  df_horas = pd.DataFrame({'ATENCIONES':dataframe.FECHA_HORA_INGRESO.dt.hour.value_counts()})
+  df_horas = df_horas.sort_index()
+  #print('Atenciones por hora | HOSPITALIZACIÓN')
+  #display(df_horas)
+
+  # Plot
+  fig, ax = plt.subplots(figsize=(12,12))
+  df_horas.plot.bar(rot=90, ax=ax)
+  ax.set_title(f'Atenciones por hora | HOSPITALIZACIÓN | mes(es) {months[0]} a {months[-1]} de {year}')
+  for i in ax.patches:
+    ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=11, color='dimgrey')
+  
+ 
