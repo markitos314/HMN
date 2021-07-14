@@ -958,4 +958,26 @@ def labo_all(dataframe):
     if i.get_height() < 1000:
       ax.text(i.get_x(), i.get_height()*1.03, str(int(i.get_height())), fontsize=10, color='dimgrey')
     else:
-      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')       
+      ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')
+
+def lab_totalizado(path):
+  # Preprocess
+  lab_total = pd.read_csv(path)
+  lab_total = lab_total.drop(columns=['Unnamed: 0','Unnamed: 6','Unnamed: 7'])
+  lab_total = lab_total.drop(index=[0,1,2,3,4,5,6,7,8,9,10,11])
+  lab_total.columns=['PRUEBA','PENDIENTES','INFORMADAS','ANULADAS','TOTAL']
+  lab_total['PENDIENTES'] = lab_total['PENDIENTES'].str.replace('[\,]','').astype(int)
+  lab_total['INFORMADAS'] = lab_total['INFORMADAS'].str.replace('[\,]','').astype(int)
+  lab_total['ANULADAS'] = lab_total['ANULADAS'].str.replace('[\,]','').astype(int)
+  lab_total['TOTAL'] = lab_total['TOTAL'].str.replace('[\,]','').astype(int)
+  lab_total = lab_total.set_index('PRUEBA')
+
+  # Plot bar
+  fig, ax = plt.subplots(figsize=(10,7))
+  lab_total.drop('TOTAL', axis=1)[:30].plot.bar(stacked=True, ax=ax)
+  ax.set_title('Situación de las 30 pruebas más realizadas')
+  # Plot pie
+  fig, ax = plt.subplots(figsize=(10,10))
+  lab_total.drop('TOTAL', axis=1).sum().plot.pie(autopct="%.2f%%")
+  ax.set_title('Distribución de los laboratorios')
+  ax.set_ylabel('Pruebas')
