@@ -851,4 +851,27 @@ def atenciones_por_hora_hosp(dataframe, por_servicio=False):
         if i.get_height() < 1000:
           ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
         else:
-          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')    
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
+   
+def preprocess_cirugias(path):
+  cirugias = pd.read_excel(path)
+  cirugias = cirugias.drop(index=[0,1,2,3])
+  cirugias.columns=['FECHA', 'SOLICITADAS', 'CONFIRMADAS', 'REALIZADAS', 'CANCELADAS']
+  cirugias.FECHA = pd.to_datetime(cirugias.FECHA, dayfirst=True)
+  cirugias = cirugias.sort_values(by='FECHA')
+  cirugias = cirugias.set_index('FECHA')
+  return cirugias
+
+def cirugias_plot(dataframe):
+  year = dataframe.index.year.unique()[0]
+  months = dataframe.index.month.unique()
+
+  # line
+  fig, (ax1,ax2) = plt.subplots(2,1, figsize=(20,15))
+  cirugias.plot(x_compat=True, ax=ax1)
+  ax1.set_title(f'Cirugías en mes(es) {months[0]} a {months[-1]} de {year}')
+  # bar
+  cirugias.sum().plot.bar(rot=0, ax=ax2)
+  ax2.set_title(f'Cirugías en mes(es) {months[0]} a {months[-1]} de {year}')
+  for i in ax2.patches:
+    ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
