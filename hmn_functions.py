@@ -814,7 +814,7 @@ def top_20_professionals_hosp(dataframe):
   for i in ax2.patches:
     ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
     
-def atenciones_por_hora_hosp(dataframe):
+def atenciones_por_hora_hosp(dataframe, por_servicio=False):
   # Get year and months from dataframe
   year = dataframe.FECHA_HORA_INGRESO.dt.year.unique()[0]
   months = dataframe.FECHA_HORA_INGRESO.dt.month.unique()
@@ -826,9 +826,29 @@ def atenciones_por_hora_hosp(dataframe):
 
   # Plot
   fig, ax = plt.subplots(figsize=(12,12))
-  df_horas.plot.bar(rot=90, ax=ax)
+  df_horas.plot.bar(rot=0, ax=ax)
   ax.set_title(f'Atenciones por hora | HOSPITALIZACIÓN | mes(es) {months[0]} a {months[-1]} de {year}')
   for i in ax.patches:
     ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=11, color='dimgrey')
   
- 
+  if por_servicio:
+    secciones = dataframe['SECCION'].unique()
+
+    # Loop plot by seccion
+    for i, secc in enumerate(secciones):
+      secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
+      df_horas_temp = secc_temp.FECHA_HORA_INGRESO.dt.hour.value_counts()
+      df_horas_temp = df_horas_temp.sort_index()
+
+      # Plot
+      plt.figure()
+      ax = df_horas_temp.plot(kind='bar', fontsize=13, figsize=(12,12), color="orange")
+      ax.set_title(f"Cantidad de atenciones según la hora | {secc} | HOSPITALIZACIÓN | mes(es) {months[0]} a {months[-1]} de {year}")
+      ax.set_ylabel("Atenciones")
+      plt.xticks(rotation=0)
+
+      for i in ax.patches:
+        if i.get_height() < 1000:
+          ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
+        else:
+          ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')    
