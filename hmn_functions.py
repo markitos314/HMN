@@ -981,3 +981,53 @@ def lab_totalizado(path):
   lab_total.drop('TOTAL', axis=1).sum().plot.pie(autopct="%.2f%%")
   ax.set_title('Distribución de los laboratorios')
   ax.set_ylabel('Pruebas')
+  
+def ambulatorios_totalizados(path, save_path, year, months, show_plot=False, save_plot=False):
+  # Preprocess
+  ambulatorio = pd.read_csv(path)
+  ambulatorio = ambulatorio.dropna(axis=1, how='all')
+  ambulatorio = ambulatorio.dropna(axis=0, how='any')
+  ambulatorio = ambulatorio.drop(axis=0, index=6)
+  ambulatorio.columns=['SERVICIO','AGENDA','ATENDIDOS','CITADOS','NO_ATENDIDOS','CANCELADOS','PENDIENTES','TOTAL']
+  ambulatorio['ATENDIDOS'] = ambulatorio['ATENDIDOS'].str.replace('\,','').astype(int)
+  ambulatorio['CITADOS'] = ambulatorio['CITADOS'].str.replace('\,','').astype(int)
+  ambulatorio['NO_ATENDIDOS'] = ambulatorio['NO_ATENDIDOS'].str.replace('\,','').astype(int)
+  ambulatorio['CANCELADOS'] = ambulatorio['CANCELADOS'].str.replace('\,','').astype(int)
+  ambulatorio['PENDIENTES'] = ambulatorio['PENDIENTES'].str.replace('\,','').astype(int)
+  ambulatorio['TOTAL'] = ambulatorio['TOTAL'].str.replace('\,','').astype(int)
+  ambulatorio = ambulatorio.reset_index(drop=True)
+
+  # Plot totals
+  fig, ax = plt.subplots(figsize=(10,7))
+  ambulatorio.drop(columns=['SERVICIO','AGENDA','TOTAL']).sum().plot.bar(rot=0, ax=ax)
+  ax.set_title(f'Turnos ambulatorios totales | Mes(es) {months[0]} a {months[-1]} de {year}')
+  x_lim = (ax.get_xlim()[0]+ax.get_xlim()[1])/25
+  for j in ax.patches:
+    ax.text(j.get_x()+x_lim, j.get_height()+ax.get_ylim()[1]/100, str(j.get_height()), fontsize=13, color='dimgrey')
+  fig.savefig(f'{save_path}/turnos_ambulatorios_totales.png', dpi=600, bbox_inches='tight')
+  print(f'Guardando \"turnos_ambulatorios_totales.png\" en {save_path}')
+
+  # Plot individuals
+  # Create array of servicios
+  servicios = ambulatorio.SERVICIO.unique()
+  dfs = []
+  # Create one dataframe per servicio
+  for i, servicio in enumerate(servicios):
+    # Fill dataframe array with individual dataframe per servicio
+    dfs.append(ambulatorio[ambulatorio['SERVICIO']==servicio])
+    fig, ax = plt.subplots(figsize=(10,7))
+    # Plot bar
+    dfs[i].drop(columns=['SERVICIO','AGENDA','TOTAL']).sum().plot.bar(rot=0, ax=ax)
+    ax.set_title(f'Turnos ambulatorios | {servicios[i]}');
+    # Make average x to write total number after
+    x_lim = (ax.get_xlim()[0]+ax.get_xlim()[1])/25
+    # Write totals in plot
+    for j in ax.patches:
+      ax.text(j.get_x()+x_lim, j.get_height()+ax.get_ylim()[1]/100, str(j.get_height()), fontsize=13, color='dimgrey')
+    # Save if chosen
+    if save_plot:
+      fig.savefig(f'{save_path}/turnos_ambulatorios_{servicios[i]}.png', dpi=300, bbox_inches='tight')
+      print(f'Guardando \"turnos_ambulatorios_{servicios[i]}.png\" en {save_path}...')
+    # Show if chosen
+    if show_plot==0:
+      plt.close(fig)
