@@ -1027,7 +1027,7 @@ def ambulatorios_totalizados(path, save_path, year, months, show_plot=False, sav
     # Save if chosen
     if save_plot:
       fig.savefig(f'{save_path}/turnos_ambulatorios_{servicios[i]}.png', dpi=300, bbox_inches='tight')
-      print(f'Guardando \"turnos_ambulatorios_{servicios[i]}.png\" en {save_path}...')
+      print(f'Guardando \"turnos_ambulatorios_{servicios[i]}.png\" en {save_path}')
     # Show if chosen
     if show_plot==0:
       plt.close(fig)
