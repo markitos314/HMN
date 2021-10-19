@@ -728,6 +728,15 @@ def atenciones_por_dia_semana_ambulatorio(dataframe, por_servicio=False):
         ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
   
 def atenciones_grupo_etareo_ambulatorio(dataframe, por_servicio=False):
+  """
+  Function that processes previously generated dataframe and shows attentions divided age in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Get months and year of dataframe
   year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
   months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
@@ -756,6 +765,7 @@ def atenciones_grupo_etareo_ambulatorio(dataframe, por_servicio=False):
   plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
   plt.title(f"Atenciones según grupo etáreo | AMBULATORIO | mes(es) {months[0]} a {months[-1]} de {year}");
 
+  # by service processing
   if por_servicio:
     # By seccion
     servicios = dataframe['SERVICIO'].unique()
@@ -833,6 +843,15 @@ def preprocess_hospitalizacion(path):
   return df
 
 def atenciones_hosp(dataframe):
+  """
+  Function that processes previously generated dataframe and shows attentions in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Defino los dos servicios principales
   toco = dataframe[dataframe['SERVICIO']=='Tocoginecología']
   neo = dataframe[dataframe['SERVICIO']=='Neonatología']
@@ -868,6 +887,15 @@ def atenciones_hosp(dataframe):
     ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
     
 def top_20_professionals_hosp(dataframe):
+  """
+  Function that processes previously generated dataframe and shows top 20 professionals with most attentions in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Get year and months from dataframe
   year = dataframe.FECHA_HORA_INGRESO.dt.year.unique()[0]
   months = dataframe.FECHA_HORA_INGRESO.dt.month.unique()
@@ -899,6 +927,15 @@ def top_20_professionals_hosp(dataframe):
     ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
     
 def atenciones_por_hora_hosp(dataframe, por_servicio=False):
+  """
+  Function that processes previously generated dataframe and shows attentions divided by hours in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Get year and months from dataframe
   year = dataframe.FECHA_HORA_INGRESO.dt.year.unique()[0]
   months = dataframe.FECHA_HORA_INGRESO.dt.month.unique()
@@ -915,6 +952,7 @@ def atenciones_por_hora_hosp(dataframe, por_servicio=False):
   for i in ax.patches:
     ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=11, color='dimgrey')
   
+  # by service processing
   if por_servicio:
     secciones = dataframe['SECCION'].unique()
 
@@ -938,6 +976,15 @@ def atenciones_por_hora_hosp(dataframe, por_servicio=False):
           ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
    
 def preprocess_cirugias(path):
+  """
+  Function that processes 'cirugias' csv export from Pentaho.
+
+  Args:
+    path (str): path to .csv
+
+  Returns: pandas dataframe.
+
+  """
   cirugias = pd.read_excel(path)
   cirugias = cirugias.drop(index=[0,1,2,3])
   cirugias.columns=['FECHA', 'SOLICITADAS', 'CONFIRMADAS', 'REALIZADAS', 'CANCELADAS']
@@ -947,6 +994,15 @@ def preprocess_cirugias(path):
   return cirugias
 
 def cirugias_plot(dataframe):
+  """
+  Function that processes previously generated dataframe and shows monthly surgeries plots.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return various plots.
+
+  """
   year = dataframe.index.year.unique()[0]
   months = dataframe.index.month.unique()
 
@@ -961,6 +1017,15 @@ def cirugias_plot(dataframe):
     ax2.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
 def preprocess_lab(path):
+  """
+  Function that processes 'lab' csv export from Pentaho.
+
+  Args:
+    path (str): path to .csv
+
+  Returns: pandas dataframe.
+
+  """
   lab = pd.read_csv(path)
   lab = lab.drop(index=[0,1,2,3,4,5])
   lab = lab.drop(columns=['Unnamed: 7','Unnamed: 8','Unnamed: 9','Unnamed: 10','Unnamed: 11','Unnamed: 12','Unnamed: 13','Unnamed: 14','Unnamed: 15'])
@@ -971,6 +1036,15 @@ def preprocess_lab(path):
   return lab
     
 def labo_all(dataframe):
+  """
+  Function that processes previously generated dataframe and shows various laboratory plots.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return various plots.
+
+  """
   # Useful data
   total_tipo_pruebas = dataframe.PRUEBA.unique().shape[0]
   total_pacientes = dataframe.PACIENTE.unique().shape[0]
@@ -1045,6 +1119,15 @@ def labo_all(dataframe):
       ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=10, color='dimgrey')
 
 def lab_totalizado(path):
+  """
+  Function that processes 'lab_totalizado' csv export from Pentaho.
+
+  Args:
+    path (str): path to .csv
+
+  Returns: nothing because it's done for google colab. Could return different plots.
+
+  """
   # Preprocess
   lab_total = pd.read_csv(path)
   lab_total = lab_total.drop(columns=['Unnamed: 0','Unnamed: 6','Unnamed: 7'])
