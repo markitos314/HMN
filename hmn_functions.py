@@ -73,12 +73,12 @@ def concatenate_dfs(df_list):
 
 def atenciones_por_seccion(dataframe):
   """
-  Function that generates statistics from emergency dataframe
+  Function that processes previously generated dataframe and shows attentions divided by section criteria.
 
   Args:
     dataframe: pandas dataframe
 
-  Returns:
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
 
   """
   ### Atenciones por sección
@@ -151,6 +151,15 @@ def top_20_professionals(dataframe, por_seccion=False):
         ax.text(i.get_x(), i.get_height()*1.02, str(i.get_height()), fontsize=13, color='dimgrey')
   
 def atenciones_por_hora(dataframe, por_servicio=False):
+  """
+  Function that processes previously generated dataframe and shows attentions divided by hours in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   df_horas = dataframe.FECHA_HORA_INGRESO.dt.hour.value_counts()
   df_horas = df_horas.sort_index()
 
@@ -190,6 +199,15 @@ def atenciones_por_hora(dataframe, por_servicio=False):
           ax.text(i.get_x()-i.get_width()/2, i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
 def atenciones_por_dia_semana(dataframe, por_seccion):
+  """
+  Function that processes previously generated dataframe and shows attentions divided weekdays in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Df prepare
   df_dias = dataframe['FECHA_HORA_INGRESO'].dt.dayofweek.value_counts()
   df_dias.sort_index(inplace=True)
@@ -228,6 +246,15 @@ def atenciones_por_dia_semana(dataframe, por_seccion):
         ax.text(i.get_x() + 0.1, i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
 def atenciones_grupo_etareo(dataframe):
+  """
+  Function that processes previously generated dataframe and shows attentions divided by ages in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Group classifier
   grupos = [0,0,0,0,0,0]
   for i in range(len(dataframe.EDAD)):
@@ -252,7 +279,7 @@ def atenciones_grupo_etareo(dataframe):
   plt.pie(grupos, labels=labels, autopct='%1.2f%%', explode=explode)
   plt.title("Atenciones según grupo etáreo | EMERGENCIAS");
 
-  # By seccion
+  # By section
   secciones = dataframe['SECCION'].unique()
 
   for j, secc in enumerate(secciones):
@@ -282,6 +309,15 @@ def atenciones_grupo_etareo(dataframe):
     plt.title(f"Atenciones en {secc} según grupo etáreo | EMERGENCIAS");
     
 def motivo_alta(dataframe):
+  """
+  Function that processes previously generated dataframe and shows different registration causes in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   df_display = pd.DataFrame(dataframe['MOTIVO_ALTA'].value_counts(dropna=False))
   df_display = df_display.reset_index()
   df_display.columns=['MOTIVO_ALTA', 'CANTIDAD']
@@ -290,6 +326,7 @@ def motivo_alta(dataframe):
   ax = dataframe['MOTIVO_ALTA'].value_counts(dropna=False).plot(kind='barh', figsize=(15,10))
   ax.set_title("Motivo de alta")
 
+  # print labels
   for i in ax.patches:
     if i.get_width() > 1000:
       ax.text(i.get_width() - 600, i.get_y() + 0.20, str(i.get_width()), fontsize=13, color='white')
@@ -298,6 +335,15 @@ def motivo_alta(dataframe):
 
 
 def top_20_cod_diagnostics(dataframe, por_seccion):
+  """
+  Function that processes previously generated dataframe and shows top 20 coded diagnostics in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Df prep
   sin_cod = dataframe['CIE10'].isna().sum()
   total_atenciones = len(dataframe.CIE10)
@@ -316,7 +362,7 @@ def top_20_cod_diagnostics(dataframe, por_seccion):
       ax.text(i.get_x()*1.02, i.get_height() + 2, str(i.get_height()), fontsize=13, color='grey')
   
   if por_seccion:
-    # By seccion
+    # By section
     secciones = dataframe['SECCION'].unique()
     for i, secc in enumerate(secciones):
       secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
@@ -342,6 +388,15 @@ def top_20_cod_diagnostics(dataframe, por_seccion):
           ax.text(i.get_x()*1.02, i.get_height()*1.02, str(i.get_height()), fontsize=13, color='grey') 
 
 def promedios_tiempo(dataframe):
+  """
+  Function that processes previously generated dataframe and shows stay time averages dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   print('Medias de tiempo según estado del paciente:')
   print(f"="*85)
   print(f"Entre Ingreso y Alta Médica: {dataframe['DIF_ALTA_MEDICA_INGRESO'].mean()}")
@@ -419,12 +474,12 @@ def preprocess_ambulatorio(path):
 
 def atenciones(dataframe, por_servicio=True, por_seccion=False, torta=False, barra=True):
   """
-  Function that generates statistics from emergency dataframe
+  Function that processes previously generated dataframe and shows attentions filtered by various criteria.
 
   Args:
     dataframe: pandas dataframe
 
-  Returns:
+  Returns: nothing because it's done for google colab. Could return processed dataframes and plots.
 
   """
   ### Atenciones por sección
@@ -493,6 +548,15 @@ def atenciones(dataframe, por_servicio=True, por_seccion=False, torta=False, bar
           ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
     
 def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccion=False):
+  """
+  Function that processes previously generated dataframe and shows top 20 coded diagnostics in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Get year and months from dataframe
   year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
   months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
@@ -510,7 +574,7 @@ def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccio
     ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
   
   if por_seccion:
-    # By seccion
+    # By section
     secciones = dataframe['SECCION'].unique()
     for i, secc in enumerate(secciones):
       secc_temp = pd.DataFrame(dataframe[dataframe['SECCION']==secciones[i]])
@@ -563,6 +627,15 @@ def top_20_cod_diagnostics_ambulatorio(dataframe, por_servicio=False, por_seccio
           ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
           
 def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
+  """
+  Function that processes previously generated dataframe and shows attentions divided by hours in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Get year and months from dataframe
   year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
   months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
@@ -577,12 +650,14 @@ def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
   ax.set_ylabel("Atenciones")
   plt.xticks(rotation=0)
 
+  # plot labels
   for i in ax.patches:
     if i.get_height() < 1000:
       ax.text(i.get_x(), i.get_height()*1.02, str(int(i.get_height())), fontsize=13, color='dimgrey')
     else:
       ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
 
+  # by service processing
   if por_servicio:
     servicios = dataframe['SERVICIO'].unique()
 
@@ -606,6 +681,15 @@ def atenciones_por_hora_ambulatorio(dataframe, por_servicio=False):
           ax.text(i.get_x(), i.get_height()*1.01, str(int(i.get_height())), fontsize=13, color='dimgrey')
           
 def atenciones_por_dia_semana_ambulatorio(dataframe, por_servicio=False):
+  """
+  Function that processes previously generated dataframe and shows attentions divided by weekdays in dataframe's period of time.
+
+  Args:
+    dataframe: pandas dataframe
+
+  Returns: nothing because it's done for google colab. Could return processed dataframe and plots.
+
+  """
   # Get months and year of dataframe
   year = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).year.unique()[0]
   months = pd.DatetimeIndex(dataframe['FECHA_HORA_TURNO']).month.unique()
