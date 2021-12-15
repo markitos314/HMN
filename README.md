@@ -23,7 +23,7 @@ For each module, treatment is very similar, though it differs in some sutil deta
 * **reason for discharge**
 * **length of stay** - averages in patients length of stay
 
-> **Note:** for discretion reasons, all content in the `.cvs` files has been modified to fulfil this notebook showcase, and preserve patients data confidential.
+> **Note:** for discretion reasons, all content in the `.cvs` files has been modified to fulfil this notebook showcase, and preserve patients data confidentiality.
 
 ## Streamlit implementation
 Lastly, this series of algorithms was bulked in a website leveraging python's [streamlit](https://streamlit.io/) library.
